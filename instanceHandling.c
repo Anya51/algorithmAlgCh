@@ -14,27 +14,24 @@ typedef struct Instances
     int budget;
 } Instance;
 
+/*
 typedef struct adjacencyNodes
-{   
+{
     int idNext;
     adjacencyNode* next;
-    /* data */
 }adjacencyNode;
 
 typedef struct adjacencyLists
 {
     adjacencyList* head;
-    /* data */
 }adjacencyList;
 
 typedef struct Graphs
 {
-    /* data */
     int nNodes;
-    adjacencyList* array; 
+    adjacencyList* array;
 }Graph;
-
-
+*/
 
 
 int errno;
