@@ -14,16 +14,16 @@ typedef struct Instances
     int budget;
 } Instance;
 
-/*
+
 typedef struct adjacencyNodes
 {
     int idNext;
-    adjacencyNode* next;
+    struct adjacencyNodes* next;
 }adjacencyNode;
 
 typedef struct adjacencyLists
 {
-    adjacencyList* head;
+    struct adjacencyLists* head;
 }adjacencyList;
 
 typedef struct Graphs
@@ -31,7 +31,7 @@ typedef struct Graphs
     int nNodes;
     adjacencyList* array;
 }Graph;
-*/
+
 
 
 int errno;
@@ -42,6 +42,7 @@ static void closeFile (FILE *fp);
 static FILE *openFileRead (char *fileName, char *mode);
 void printInstance (Instance* instance);
 static void exitApplication(Instance* instance);
+void instanceToGraph(Instance* instance);
 
 // Test Unit
 int main(int argc, char **argv)
@@ -49,7 +50,8 @@ int main(int argc, char **argv)
 
     Instance* instance = NULL;
     instance = handleInstance("instance.txt");
-    printInstance(instance);
+    // printInstance(instance);
+    instanceToGraph(instance);
     exitApplication(instance);
     return 0;
 }
@@ -88,7 +90,7 @@ Instance *handleInstance(char *fileName)
     fgets(instance->name, 120, input);
     fscanf(input, " %d %d", &instance->nVar, &instance->nClauses);
 
-    instance->clauses =  malloc(sizeof(int*) * instance->nClauses * sizeof(instance->clauses));
+    instance->clauses =  malloc(sizeof(int*) * instance->nClauses * sizeof(instance->clauses) * 100);
 
     for (int i = 0; i < instance->nClauses; i++)
     {
@@ -108,7 +110,7 @@ Instance *handleInstance(char *fileName)
     }
 
     fscanf(input, " %1d", &aux);
-    instance->mandatory =  malloc(sizeof(int*) * aux);
+    instance->mandatory =  malloc(sizeof(int*) * aux * 1000);
     instance->mandatory[0] = aux;
 
     for (int j = 1; j <= aux; j++)
@@ -121,7 +123,7 @@ Instance *handleInstance(char *fileName)
     printf("\n");
 
 //!!
-    instance->cost =  malloc(sizeof(int*) * instance->nVar);
+    instance->cost =  malloc(sizeof(int*) * instance->nVar * 1000);
 
     for (int j = 0; j < instance->nVar; j++)
     {
@@ -132,7 +134,7 @@ Instance *handleInstance(char *fileName)
     }
     printf("\n");
 
-    instance->benefits =  malloc(sizeof(int*) * instance->nVar);
+    instance->benefits =  malloc(sizeof(int*) * instance->nVar * 1000);
 
     for (int j = 0; j < instance->nVar; j++)
     {
@@ -163,13 +165,13 @@ void printInstance (Instance* instance)
             printf("\n");
     }
 
-    for (int j = 1; j <= instance->mandatory[0]; j++)
-    {
+//    for (int j = 1; j <= instance->mandatory[0]; j++)
+  //  {
 
-        printf("%d ", instance->mandatory[j]);
+    //    printf("%d ", instance->mandatory[j]);
 
-    }
-    printf("\n");
+   // }
+   // printf("\n");
 
     for (int j = 0; j < instance->nVar; j++)
     {
@@ -193,11 +195,25 @@ void printInstance (Instance* instance)
 
 static void exitApplication(Instance* instance)
 {
-    free(instance->clauses);
     free(instance);
 
-    instance->clauses = NULL;
     instance = NULL;
 
+    return;
+}
+
+void instanceToGraph(Instance* instance)
+{
+    for (int i = 0; i < instance->nClauses; i++)
+    {
+        for (int j = 1; j <= instance->clauses[i][0]; j++)
+        {
+
+            printf("%d ", instance->clauses[i][j]);
+
+        }
+            printf("\n");
+    }  
+    
     return;
 }
