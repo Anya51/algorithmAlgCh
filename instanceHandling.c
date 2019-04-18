@@ -23,7 +23,7 @@ typedef struct adjacencyNodes
 
 typedef struct adjacencyLists
 {
-    struct adjacencyLists* head;
+    adjacencyNode* head;
 }adjacencyList;
 
 typedef struct Graphs
@@ -42,16 +42,24 @@ static void closeFile (FILE *fp);
 static FILE *openFileRead (char *fileName, char *mode);
 void printInstance (Instance* instance);
 static void exitApplication(Instance* instance);
-void instanceToGraph(Instance* instance);
+void instanceToGraph(Instance* instance, Graph* graph);
+adjacencyNode* newAdjacencyListNode(int idNext);
+Graph* createGraph(int nNodes);
+void addEdge(Graph* graph, int actual, int idNext);
+void printGraph(Graph* graph);
+
 
 // Test Unit
 int main(int argc, char **argv)
 {
 
     Instance* instance = NULL;
+    Graph* graph = NULL;
     instance = handleInstance("instance.txt");
-    printInstance(instance);
-    //instanceToGraph(instance);
+    graph = createGraph(instance->nVar);
+
+  //  printInstance(instance);
+    instanceToGraph(instance, graph);
     exitApplication(instance);
 
     return 0;
@@ -165,8 +173,8 @@ void printInstance (Instance* instance)
         for (int j = 1; j <= instance->clauses[i][0]; j++)
         {
 
-            printf("%d ", instance->clauses[i][j]);
-
+            //printf("%d ", instance->clauses[i][j]);
+            newAdjacencyListNode(instance->clauses[i][j]);
         }
             printf("\n");
     }
@@ -216,18 +224,97 @@ static void exitApplication(Instance* instance)
     return;
 }
 
-void instanceToGraph(Instance* instance)
+void instanceToGraph(Instance* instance, Graph* graph)
 {
+
     for (int i = 0; i < instance->nClauses; i++)
     {
         for (int j = 1; j <= instance->clauses[i][0]; j++)
         {
 
-            printf("%d ", instance->clauses[i][j]);
+            for (int k = 0; k < instance->nClauses; k++)
+            {
+                for (int l = 1; l <= instance->clauses[k][0]; l++)
+                {
+                    if( i == k)
+                    {
+                        continue;
+                    }
+
+                    if(instance->clauses[i][j] != instance->clauses[k][l])
+                    {
+                        addEdge(graph, instance->clauses[i][j], instance->clauses[k][l]);
+                    }
+
+
+                }
+              }
+
 
         }
-            printf("\n");
     }
 
+    printGraph(graph);
     return;
+}
+
+// A utility function to create a new adjacency list node
+adjacencyNode* newAdjacencyListNode(int idNext)
+{
+    adjacencyNode* newNode = malloc(sizeof(adjacencyNode));
+    newNode->idNext = idNext;
+    newNode->next = NULL;
+    return newNode;
+}
+
+// A utility function that creates a graph of V vertices
+Graph* createGraph(int nNodes)
+{
+    Graph* graph = malloc(sizeof(Graph));
+    graph->nNodes = nNodes;
+
+    // Create an array of adjacency lists.  Size of
+    // array will be V
+    graph->array = malloc(nNodes * sizeof(adjacencyList));
+
+    // Initialize each adjacency list as empty by
+    // making head as NULL
+    int i;
+    for (i = 0; i < nNodes; ++i)
+        graph->array[i].head = NULL;
+
+    return graph;
+}
+
+// Adds an edge to an undirected graph
+void addEdge(Graph* graph, int actual, int idNext)
+{
+    // Add an edge from src to dest.  A new node is
+    // added to the adjacency list of src.  The node
+    // is added at the begining
+    adjacencyNode* newNode = newAdjacencyListNode(idNext);
+    newNode->next = graph->array[actual].head;
+    graph->array[actual].head = newNode;
+
+    // Since graph is undirected, add an edge from
+    // dest to src also
+    newNode = newAdjacencyListNode(actual);
+    newNode->next = graph->array[idNext].head;
+    graph->array[idNext].head = newNode;
+}
+
+void printGraph(Graph* graph)
+{
+    int v;
+    for (v = 0; v < graph->nNodes; ++v)
+    {
+        adjacencyNode* pCrawl = graph->array[v].head;
+        printf("\n Adjacency list of vertex %d\n head ", v);
+        while (pCrawl)
+        {
+            printf("-> %d", pCrawl->idNext);
+            pCrawl = pCrawl->next;
+        }
+        printf("\n");
+    }
 }
