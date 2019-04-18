@@ -226,6 +226,8 @@ static void exitApplication(Instance* instance)
 
 void instanceToGraph(Instance* instance, Graph* graph)
 {
+    int aux1 = 0;
+    int aux2 = 0;
 
     for (int i = 0; i < instance->nClauses; i++)
     {
@@ -234,27 +236,45 @@ void instanceToGraph(Instance* instance, Graph* graph)
 
             for (int k = 0; k < instance->nClauses; k++)
             {
+                if( i <= k)
+                {
+                    continue;
+                }
+
                 for (int l = 1; l <= instance->clauses[k][0]; l++)
                 {
-                    if( i == k)
+
+                    if (instance->clauses[i][j] < instance->nVar)
                     {
-                        continue;
+                        aux1 = instance->clauses[i][j];
+
+                    }
+                    else
+                    {
+                        aux1 = instance->nVar - instance->clauses[i][j];
                     }
 
-                    if(instance->clauses[i][j] != instance->clauses[k][l])
+                    if (instance->clauses[k][l] < instance->nVar)
+                    {
+                        aux2 = instance->clauses[k][l];
+
+                    }
+                    else
+                    {
+                        aux2 = instance->nVar - instance->clauses[k][l];
+                    }
+
+                    if ( (aux1 != aux2) && ((aux2 * -1) != aux1))
                     {
                         addEdge(graph, instance->clauses[i][j], instance->clauses[k][l]);
                     }
 
-
                 }
-              }
-
-
+            }
         }
     }
-
     printGraph(graph);
+
     return;
 }
 
@@ -275,7 +295,7 @@ Graph* createGraph(int nNodes)
 
     // Create an array of adjacency lists.  Size of
     // array will be V
-    graph->array = malloc(nNodes * sizeof(adjacencyList));
+    graph->array = malloc(100 * (nNodes + 1) * sizeof(adjacencyList));
 
     // Initialize each adjacency list as empty by
     // making head as NULL
@@ -306,7 +326,7 @@ void addEdge(Graph* graph, int actual, int idNext)
 void printGraph(Graph* graph)
 {
     int v;
-    for (v = 0; v < graph->nNodes; ++v)
+    for (v = 0; v < graph->nNodes * 2 + 1; ++v)
     {
         adjacencyNode* pCrawl = graph->array[v].head;
         printf("\n Adjacency list of vertex %d\n head ", v);
