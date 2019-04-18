@@ -243,30 +243,12 @@ void instanceToGraph(Instance* instance, Graph* graph)
 
                 for (int l = 1; l <= instance->clauses[k][0]; l++)
                 {
-
-                    if (instance->clauses[i][j] < instance->nVar)
+                    if((instance->clauses[i][j] + instance->nVar != instance->clauses[k][l]
+                        && instance->clauses[i][j] < instance->nVar)
+                        || (instance->clauses[i][j] - instance->nVar != instance->clauses[k][l]
+                        && instance->clauses[i][j] > instance->nVar))
                     {
-                        aux1 = instance->clauses[i][j];
-
-                    }
-                    else
-                    {
-                        aux1 = instance->nVar - instance->clauses[i][j];
-                    }
-
-                    if (instance->clauses[k][l] < instance->nVar)
-                    {
-                        aux2 = instance->clauses[k][l];
-
-                    }
-                    else
-                    {
-                        aux2 = instance->nVar - instance->clauses[k][l];
-                    }
-
-                    if ( (aux1 != aux2) && ((aux2 * -1) != aux1))
-                    {
-                        addEdge(graph, instance->clauses[i][j], instance->clauses[k][l]);
+                            addEdge(graph, instance->clauses[i][j], instance->clauses[k][l]);
                     }
 
                 }
