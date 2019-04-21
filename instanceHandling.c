@@ -3,16 +3,22 @@
 #include <string.h>
 #include <errno.h>
 
+typedef struct Clauses
+{
+    int *clause;
+} Clause;
+
 typedef struct Instances
 {
     char name[120];
-    int nVar, nClauses;
-    int **clauses;
+    int nVarTotal, nVar, nClauses;
+    Clause* clauses;
     int *mandatory;
     int *cost;
     int *benefits;
     int budget;
 } Instance;
+
 
 
 typedef struct adjacencyNodes
@@ -58,10 +64,9 @@ int main(int argc, char **argv)
     instance = handleInstance("instance.txt");
     graph = createGraph(instance->nVar);
 
-  //  printInstance(instance);
+ // printInstance(instance);
     instanceToGraph(instance, graph);
     exitApplication(instance);
-
     return 0;
 }
 
@@ -97,31 +102,34 @@ Instance *handleInstance(char *fileName)
     input = openFileRead("instance.txt", "r");
 
     instance = malloc(sizeof(instance) * sizeof(Instance));
+    instance->nVarTotal = 0;
+
     fgets(instance->name, 120, input);
 
     fscanf(input, " %d %d", &instance->nVar, &instance->nClauses);
 
-    instance->clauses =  malloc(sizeof(int*) * instance->nClauses);
+    instance->clauses =  malloc(sizeof(Clause*) * instance->nClauses);
 
     for (int i = 0; i < instance->nClauses; i++)
     {
 
         fscanf(input, " %1d", &aux);
-        instance->clauses[i] =  malloc(sizeof(int) * sizeof(instance->clauses[i]));
-        instance->clauses[i][0] = aux;
+        instance->nVarTotal = instance->nVarTotal + aux;
+        instance->clauses[i].clause =  malloc(sizeof(int) * sizeof(instance->clauses[i]));
+        instance->clauses[i].clause[0] = aux;
 
         for (int j = 1; j <= aux; j++)
         {
 
-            fscanf(input, " %d", &instance->clauses[i][j]);
-            printf("%d ", instance->clauses[i][j]);
+            fscanf(input, " %d", &instance->clauses[i].clause[j]);
+            printf("%d ", instance->clauses[i].clause[j]);
 
         }
             printf("\n");
     }
 
     fscanf(input, " %1d", &aux);
-    instance->mandatory =  malloc(sizeof(int*) * aux);
+    instance->mandatory =  malloc(sizeof(int*) * (aux + 1));
     instance->mandatory[0] = aux;
 
     for (int j = 1; j <= aux; j++)
@@ -170,11 +178,11 @@ void printInstance (Instance* instance)
 
     for (int i = 0; i < instance->nClauses; i++)
     {
-        for (int j = 1; j <= instance->clauses[i][0]; j++)
+        for (int j = 1; j <= instance->clauses[i].clause[0]; j++)
         {
 
-            //printf("%d ", instance->clauses[i][j]);
-            newAdjacencyListNode(instance->clauses[i][j]);
+            printf("%d ", instance->clauses[i].clause[j]);
+            newAdjacencyListNode(instance->clauses[i].clause[j]);
         }
             printf("\n");
     }
@@ -215,7 +223,7 @@ static void exitApplication(Instance* instance)
     for (int i = 0; i < instance->nClauses; i++)
     {
 
-        free(instance->clauses[i]);
+        free(instance->clauses[i].clause);
     }
     free(instance->clauses);
     free(instance);
@@ -229,21 +237,21 @@ void instanceToGraph(Instance* instance, Graph* graph)
 
     for (int i = 0; i < instance->nClauses; i++)
     {
-        for (int j = 1; j <= instance->clauses[i][0]; j++)
+        for (int j = 1; j <= instance->clauses[i].clause[0]; j++)
         {
 
             for (int k = 0; k < instance->nClauses; k++)
             {
-                for (int l = 1; l <= instance->clauses[k][0]; l++)
+                for (int l = 1; l <= instance->clauses[k].clause[0]; l++)
                 {
                     if( i == k)
                     {
                         continue;
                     }
 
-                    if(instance->clauses[i][j] != instance->clauses[k][l])
+                    if(instance->clauses[i].clause[j] != instance->clauses[k].clause[l])
                     {
-                        addEdge(graph, instance->clauses[i][j], instance->clauses[k][l]);
+                        addEdge(graph, instance->clauses[i].clause[j], instance->clauses[k].clause[l]);
                     }
 
 
