@@ -234,6 +234,8 @@ static void exitApplication(Instance* instance)
 
 void instanceToGraph(Instance* instance, Graph* graph)
 {
+    int aux1 = 0;
+    int aux2 = 0;
 
     for (int i = 0; i < instance->nClauses; i++)
     {
@@ -244,25 +246,23 @@ void instanceToGraph(Instance* instance, Graph* graph)
             {
                 for (int l = 1; l <= instance->clauses[k].clause[0]; l++)
                 {
-                    if( i == k)
+                    if (i == k)
                     {
                         continue;
                     }
 
-                    if(instance->clauses[i].clause[j] != instance->clauses[k].clause[l])
+
+                    if(instance->clauses[i].clause[j] != instance->clauses[k].clause[l] )
                     {
                         addEdge(graph, instance->clauses[i].clause[j], instance->clauses[k].clause[l]);
                     }
-
-
                 }
-              }
-
-
+            }
         }
     }
 
     printGraph(graph);
+
     return;
 }
 
@@ -283,7 +283,7 @@ Graph* createGraph(int nNodes)
 
     // Create an array of adjacency lists.  Size of
     // array will be V
-    graph->array = malloc(nNodes * sizeof(adjacencyList));
+    graph->array = malloc(100 * (nNodes + 1) * sizeof(adjacencyList));
 
     // Initialize each adjacency list as empty by
     // making head as NULL
@@ -314,7 +314,7 @@ void addEdge(Graph* graph, int actual, int idNext)
 void printGraph(Graph* graph)
 {
     int v;
-    for (v = 0; v < graph->nNodes; ++v)
+    for (v = 0; v < graph->nNodes * 2 + 1; ++v)
     {
         adjacencyNode* pCrawl = graph->array[v].head;
         printf("\n Adjacency list of vertex %d\n head ", v);
