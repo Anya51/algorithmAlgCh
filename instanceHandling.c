@@ -19,16 +19,20 @@ typedef struct Instances
     int budget;
 } Instance;
 
-
+typedef struct Ids{
+    int value;
+    int id;
+}Id;
 
 typedef struct adjacencyNodes
 {
-    int idNext;
+    Id idNext;
     struct adjacencyNodes* next;
 }adjacencyNode;
 
 typedef struct adjacencyLists
 {
+    Id idMy;
     adjacencyNode* head;
 }adjacencyList;
 
@@ -49,12 +53,13 @@ static FILE *openFileRead (char *fileName, char *mode);
 void printInstance (Instance* instance);
 static void exitApplication(Instance* instance);
 void instanceToGraph(Instance* instance, Graph* graph);
-adjacencyNode* newAdjacencyListNode(int idNext);
+adjacencyNode* newAdjacencyListNode(Id idNext);
 Graph* createGraph(int nNodes);
-void addEdge(Graph* graph, int actual, int idNext);
+void addEdge(Graph* graph, Id actual, Id idNext);
 void printGraph(Graph* graph);
 
 
+/////////////////////////////////////////////////////////////////////
 // Test Unit
 int main(int argc, char **argv)
 {
@@ -62,13 +67,18 @@ int main(int argc, char **argv)
     Instance* instance = NULL;
     Graph* graph = NULL;
     instance = handleInstance("instance.txt");
-    graph = createGraph(instance->nVar);
+    graph = createGraph(instance->nVarTotal);
 
- // printInstance(instance);
+    printInstance(instance);
     instanceToGraph(instance, graph);
     exitApplication(instance);
     return 0;
 }
+
+
+
+///////////////////////////////////////////////////////////////////
+
 
 // Function receives a char* fileName  and a char* mode
 // Return a non-NULL pointer file.
@@ -127,6 +137,7 @@ Instance *handleInstance(char *fileName)
         }
             printf("\n");
     }
+        instance->nVarTotal = instance->nVarTotal + 1;
 
     fscanf(input, " %1d", &aux);
     instance->mandatory =  malloc(sizeof(int*) * (aux + 1));
@@ -173,16 +184,22 @@ Instance *handleInstance(char *fileName)
     return instance;
 }
 
+
+//printInstance
 void printInstance (Instance* instance)
 {
+    Id newId;
+    int aux = 1;
 
     for (int i = 0; i < instance->nClauses; i++)
     {
         for (int j = 1; j <= instance->clauses[i].clause[0]; j++)
         {
-
-            printf("%d ", instance->clauses[i].clause[j]);
-            newAdjacencyListNode(instance->clauses[i].clause[j]);
+            newId.id = aux;
+            newId.value = instance->clauses[i].clause[j];
+            printf("%d ",  newId.value);
+            newAdjacencyListNode(newId);
+            aux++;
         }
             printf("\n");
     }
@@ -215,6 +232,8 @@ void printInstance (Instance* instance)
     return;
 }
 
+
+//exitApplication
 static void exitApplication(Instance* instance)
 {
     free(instance->cost);
@@ -232,33 +251,53 @@ static void exitApplication(Instance* instance)
     return;
 }
 
+
+//instanceToGraph
 void instanceToGraph(Instance* instance, Graph* graph)
 {
+    Id idNew_a;
+    Id idNew_b;
     int aux1 = 0;
     int aux2 = 0;
 
     for (int i = 0; i < instance->nClauses; i++)
     {
+
         for (int j = 1; j <= instance->clauses[i].clause[0]; j++)
         {
-
-            for (int k = 0; k < instance->nClauses; k++)
+            aux2 = 0;
+            for (int k = i + 1; k < instance->nClauses; k++)
             {
+                aux2 = aux2 + instance->clauses[k - 1].clause[0];
+
+
                 for (int l = 1; l <= instance->clauses[k].clause[0]; l++)
                 {
-                    if (i == k)
-                    {
-                        continue;
-                    }
+                    int a = instance->clauses[i].clause[j] == instance->clauses[k].clause[l];
+                    int b = instance->clauses[i].clause[j] > instance->nVar &&
+                    instance->clauses[i].clause[j] - instance->nVar !=  instance->clauses[k].clause[l];
+                    int c = instance->clauses[k].clause[l] > instance->nVar &&
+                    instance->clauses[k].clause[l] - instance->nVar !=  instance->clauses[i].clause[j];
+                    int d = instance->clauses[i].clause[j] <= instance->nVar &&
+                    instance->clauses[k].clause[l] <= instance->nVar &&
+                    instance->clauses[i].clause[j] != instance->clauses[k].clause[l];
 
-
-                    if(instance->clauses[i].clause[j] != instance->clauses[k].clause[l] )
+                    if( a || b || c || d)
                     {
-                        addEdge(graph, instance->clauses[i].clause[j], instance->clauses[k].clause[l]);
+                       idNew_a.id = aux1 + j;
+                       idNew_a.value = instance->clauses[i].clause[j];
+                       idNew_b.id = aux1 + aux2 + l;
+                       idNew_b.value = instance->clauses[k].clause[l];
+                       addEdge(graph, idNew_a, idNew_b);
                     }
+                    else{}
+
                 }
+
+
             }
         }
+        aux1 = aux1 + instance->clauses[i].clause[0];
     }
 
     printGraph(graph);
@@ -267,9 +306,10 @@ void instanceToGraph(Instance* instance, Graph* graph)
 }
 
 // A utility function to create a new adjacency list node
-adjacencyNode* newAdjacencyListNode(int idNext)
+adjacencyNode* newAdjacencyListNode(Id idNext)
 {
     adjacencyNode* newNode = malloc(sizeof(adjacencyNode));
+
     newNode->idNext = idNext;
     newNode->next = NULL;
     return newNode;
@@ -283,44 +323,60 @@ Graph* createGraph(int nNodes)
 
     // Create an array of adjacency lists.  Size of
     // array will be V
-    graph->array = malloc(100 * (nNodes + 1) * sizeof(adjacencyList));
+    graph->array = malloc(nNodes * sizeof(graph->array[0]));
+    adjacencyList* newList = NULL;
+    newList = malloc(sizeof * newList);
+    newList->head = NULL;
+    newList->idMy.id = 0;
+    newList->idMy.value = 0;
+
 
     // Initialize each adjacency list as empty by
     // making head as NULL
     int i;
-    for (i = 0; i < nNodes; ++i)
-        graph->array[i].head = NULL;
+    for (i = 0; i < nNodes; i++)
+        graph->array[i] = *newList;
+
+    free(newList);
+    newList = NULL;
 
     return graph;
 }
 
-// Adds an edge to an undirected graph
-void addEdge(Graph* graph, int actual, int idNext)
-{
-    // Add an edge from src to dest.  A new node is
-    // added to the adjacency list of src.  The node
-    // is added at the begining
-    adjacencyNode* newNode = newAdjacencyListNode(idNext);
-    newNode->next = graph->array[actual].head;
-    graph->array[actual].head = newNode;
 
-    // Since graph is undirected, add an edge from
-    // dest to src also
+
+// Adds an edge to an undirected graph
+void addEdge(Graph* graph, Id actual, Id idNext)
+{
+
+
+    adjacencyNode* newNode = newAdjacencyListNode(idNext);
+    graph->array[actual.id].idMy = actual;
+    newNode->next = graph->array[actual.id].head;
+    graph->array[actual.id].head = newNode;
+
     newNode = newAdjacencyListNode(actual);
-    newNode->next = graph->array[idNext].head;
-    graph->array[idNext].head = newNode;
+    graph->array[idNext.id].idMy = idNext;
+    newNode->next = graph->array[idNext.id].head;
+    graph->array[idNext.id].head = newNode;
 }
 
+
+//printGraph
 void printGraph(Graph* graph)
 {
     int v;
-    for (v = 0; v < graph->nNodes * 2 + 1; ++v)
+    for (v = 0; v < graph->nNodes; v++)
     {
         adjacencyNode* pCrawl = graph->array[v].head;
-        printf("\n Adjacency list of vertex %d\n head ", v);
+        if (graph->array[v].idMy.value == 0)
+        {
+            continue;
+        }
+        printf("\n Adjacency list of vertex %d and Id %d\n head ", graph->array[v].idMy.id, graph->array[v].idMy.value);
         while (pCrawl)
         {
-            printf("-> %d", pCrawl->idNext);
+            printf("-> %d", pCrawl->idNext.value);
             pCrawl = pCrawl->next;
         }
         printf("\n");
