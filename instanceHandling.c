@@ -57,6 +57,7 @@ adjacencyNode* newAdjacencyListNode(Id idNext);
 Graph* createGraph(int nNodes);
 void addEdge(Graph* graph, Id actual, Id idNext);
 void printGraph(Graph* graph);
+void AlgTDC (Graph* boundedTreeWidth);
 
 
 /////////////////////////////////////////////////////////////////////
@@ -305,7 +306,7 @@ void instanceToGraph(Instance* instance, Graph* graph)
     return;
 }
 
-// A utility function to create a new adjacency list node
+// newAdjacencyListNode
 adjacencyNode* newAdjacencyListNode(Id idNext)
 {
     adjacencyNode* newNode = malloc(sizeof(adjacencyNode));
@@ -315,14 +316,12 @@ adjacencyNode* newAdjacencyListNode(Id idNext)
     return newNode;
 }
 
-// A utility function that creates a graph of V vertices
+// CreateGraph
 Graph* createGraph(int nNodes)
 {
     Graph* graph = malloc(sizeof(Graph));
     graph->nNodes = nNodes;
 
-    // Create an array of adjacency lists.  Size of
-    // array will be V
     graph->array = malloc(nNodes * sizeof(graph->array[0]));
     adjacencyList* newList = NULL;
     newList = malloc(sizeof * newList);
@@ -331,8 +330,7 @@ Graph* createGraph(int nNodes)
     newList->idMy.value = 0;
 
 
-    // Initialize each adjacency list as empty by
-    // making head as NULL
+
     int i;
     for (i = 0; i < nNodes; i++)
         graph->array[i] = *newList;
@@ -345,7 +343,7 @@ Graph* createGraph(int nNodes)
 
 
 
-// Adds an edge to an undirected graph
+// AddEdge
 void addEdge(Graph* graph, Id actual, Id idNext)
 {
 
@@ -381,4 +379,9 @@ void printGraph(Graph* graph)
         }
         printf("\n");
     }
+}
+
+void AlgTDC (Graph* boundedTreeWidth)
+{
+    return;
 }
